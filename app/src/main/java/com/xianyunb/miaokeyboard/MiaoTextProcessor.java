@@ -112,36 +112,12 @@ public class MiaoTextProcessor {
     }
 
     private String appendMiao(String text) {
-        // 去掉末尾多余空白
-        StringBuilder sb = new StringBuilder();
-        // 在句子结尾标点后插入「喵」
-        // 简单策略：以中文标点/.!?！？。... 结尾处加喵
-        // 这里用简化实现：若文本末尾为标点则在其后补喵，否则在末尾补喵
-        if (text.length() == 0) return text;
-
+        if (text == null || text.isEmpty()) return text;
         String trimmed = text.replaceAll("\\s+$", "");
         if (trimmed.isEmpty()) return text;
-
-        char last = trimmed.charAt(trimmed.length() - 1);
-        // 标点触发：若末尾为常见句末标点，则在标点后加喵
-        if (isSentenceEndMark(last)) {
-            sb.append(trimmed).append("喵");
-        } else if (couldBeEnd(trimmed)) {
-            sb.append(trimmed).append("喵");
-        } else {
-            sb.append(trimmed);
-        }
-        return sb.toString();
-    }
-
-    private boolean isSentenceEndMark(char c) {
-        return c == '。' || c == '！' || c == '？' || c == '!' || c == '?' ||
-                c == '.' || c == '…' || c == ',' || c == '，' || c == '；';
-    }
-
-    // 无标点结尾时，默认也补喵（覆盖实时处理场景）
-    private boolean couldBeEnd(String s) {
-        return true;
+        // 已经以「喵」结尾时不再重复追加，避免出现「喵喵」
+        if (trimmed.endsWith("喵")) return text;
+        return trimmed + "喵";
     }
 
     private String appendKaomoji(String text) {
