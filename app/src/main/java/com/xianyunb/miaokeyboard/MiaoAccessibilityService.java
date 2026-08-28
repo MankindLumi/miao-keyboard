@@ -49,7 +49,7 @@ public class MiaoAccessibilityService extends AccessibilityService {
         if (event == null) return;
         if (processing) return; // 忽略自己写回文本触发的事件，防止死循环
 
-        if (event.getType() != AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
+        if (event.getEventType() != AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
             return;
         }
 
