@@ -83,6 +83,11 @@ public class MiaoAccessibilityService extends AccessibilityService {
         if (!prefs.isMasterOn()) return;
         if (!manual && !prefs.isAutoOn()) return;
 
+        // 每次喵化前重新加载最新配置，确保开关/词库改动即时生效
+        if (processor != null) {
+            processor.loadFromPrefs(prefs);
+        }
+
         long now = System.currentTimeMillis();
         if (!manual) {
             float intervalSec = prefs.getAutoInterval();
