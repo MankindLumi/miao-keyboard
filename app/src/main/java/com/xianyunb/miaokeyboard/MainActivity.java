@@ -8,7 +8,7 @@ import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.GridLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -23,8 +23,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQ_OVERLAY = 1001;
 
-    /** 预设主色调（奶白浅色系）。 */
+    /** 预设主色调（覆盖浅色/深色/鲜艳共 20 种）。 */
     private static final int[] PRESET_COLORS = new int[]{
+            // 浅色系
             0xFFE7C4F0, // 奶白粉紫（默认）
             0xFFF8BBD0, // 浅粉
             0xFFBBDEFB, // 浅蓝
@@ -33,6 +34,20 @@ public class MainActivity extends AppCompatActivity {
             0xFFFFF9C4, // 浅黄
             0xFFD1C4E9, // 浅紫
             0xFFB2EBF2, // 浅青
+            // 鲜艳系
+            0xFFF06292, // 粉红
+            0xFFE91E63, // 玫红
+            0xFFFF7043, // 珊瑚橙
+            0xFFFFC107, // 琥珀
+            // 中深色系
+            0xFF66BB6A, // 草绿
+            0xFF26A69A, // 青绿
+            0xFF42A5F5, // 天蓝
+            0xFF7E57C2, // 深紫
+            0xFF5C6BC0, // 靛蓝
+            0xFF8D6E63, // 棕
+            0xFF78909C, // 蓝灰
+            0xFF37474F, // 深灰蓝
     };
 
     private MiaoPrefs prefs;
@@ -59,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar sbFloatSize;
     private TextView tvFloatAlphaValue;
     private TextView tvFloatSizeValue;
-    private LinearLayout llColors;
+    private GridLayout llColors;
     private int selectedColor = 0xFFE7C4F0;
 
     @Override
@@ -98,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
         setupFloatListeners();
 
         swMaster.setOnCheckedChangeListener((v, checked) -> prefs.saveMasterOn(checked));
+
+        // 三个功能开关即时生效（切换即保存，无需再点「保存配置」）
+        swReplace.setOnCheckedChangeListener((v, checked) -> syncFlags());
+        swMiao.setOnCheckedChangeListener((v, checked) -> syncFlags());
+        swKaomoji.setOnCheckedChangeListener((v, checked) -> syncFlags());
 
         swAuto.setOnCheckedChangeListener((v, checked) -> saveAutoConfig());
         sbDelay.setOnSeekBarChangeListener(new SimpleSeekListener() {
@@ -194,19 +214,26 @@ public class MainActivity extends AppCompatActivity {
         tvFloatSizeValue.setText(prefs.getFloatSize() + " dp");
     }
 
-    /** 构建颜色色块选择器。 */
+    /** 构建颜色色块选择器（网格排列，色块更大、更易点击）。 */
     private void setupColorButtons() {
         float d = getResources().getDisplayMetrics().density;
-        int size = Math.round(40 * d);
-        for (int color : PRESET_COLORS) {
+        int size = Math.round(52 * d);
+        int margin = Math.round(7 * d);
+        final int columns = 4;
+        for (int i = 0; i < PRESET_COLORS.length; i++) {
+            final int color = PRESET_COLORS[i];
             TextView chip = new TextView(this);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
-            lp.setMargins(0, 0, Math.round(10 * d), 0);
+            GridLayout.LayoutParams lp = new GridLayout.LayoutParams(
+                    GridLayout.spec(i / columns),
+                    GridLayout.spec(i % columns));
+            lp.width = size;
+            lp.height = size;
+            lp.setMargins(margin, margin, margin, margin);
             chip.setLayoutParams(lp);
             chip.setGravity(Gravity.CENTER);
             chip.setText("●");
             chip.setTextColor(color);
-            chip.setTextSize(20);
+            chip.setTextSize(22);
             chip.setBackground(makeChipBackground(color, color == selectedColor));
             chip.setOnClickListener(v -> {
                 selectedColor = color;
@@ -316,6 +343,14 @@ public class MainActivity extends AppCompatActivity {
         refreshFloating();
 
         Toast.makeText(this, "已保存喵~", Toast.LENGTH_SHORT).show();
+    }
+
+    private void syncFlags() {
+        boolean r = swReplace.isChecked();
+        boolean m = swMiao.isChecked();
+        boolean k = swKaomoji.isChecked();
+        prefs.saveFlags(r, m, k);
+        processor.setFlags(r, m, k);
     }
 
     private void saveAutoConfig() {
