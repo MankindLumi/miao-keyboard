@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/float_btn"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="🐱"
-    android:textSize="30sp"
-    android:gravity="center"
-    android:padding="14dp"
-    android:background="@drawable/float_bg" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/float_container"
+    android:layout_width="56dp"
+    android:layout_height="56dp"
+    android:background="@drawable/float_bg">
+    <TextView
+        android:id="@+id/float_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="🐾"
+        android:textSize="26sp"
+        android:gravity="center"
+        android:includeFontPadding="false" />
+</FrameLayout>
