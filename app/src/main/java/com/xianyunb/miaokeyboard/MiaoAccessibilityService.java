@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -57,6 +58,7 @@ public class MiaoAccessibilityService extends AccessibilityService {
         if (processing) return;
 
         int eventType = event.getEventType();
+        Log.d("MiaoWX", "onAccessibilityEvent type=" + eventType + " pkg=" + event.getPackageName());
         if (eventType != AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
                 && eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             return;
@@ -99,9 +101,11 @@ public class MiaoAccessibilityService extends AccessibilityService {
         }
 
         AccessibilityNodeInfo node = findFocusedEditable(getRootInActiveWindow());
+        Log.d("MiaoWX", "doMiao root=" + (getRootInActiveWindow()!=null) + " node=" + (node!=null));
         if (node == null) return;
 
         CharSequence text = node.getText();
+        Log.d("MiaoWX", "doMiao text=" + text + " cls=" + node.getClassName());
         if (text == null || text.length() == 0) return;
 
         String raw = text.toString();
@@ -153,10 +157,11 @@ public class MiaoAccessibilityService extends AccessibilityService {
 
     /** 判断节点是否为输入框（兼容微信自定义输入框 isEditable() 可能返回 false 的情况）。 */
     private boolean isEditLike(AccessibilityNodeInfo node) {
-        if (node.isEditable()) return true;
+        if (node.isEditable()) { Log.d("MiaoWX","isEditLike editable true"); return true; }
         CharSequence cls = node.getClassName();
         if (cls == null) return false;
         String c = cls.toString();
+        Log.d("MiaoWX", "isEditLike cls=" + c);
         return c.contains("EditText") || c.contains("EditView");
     }
 
