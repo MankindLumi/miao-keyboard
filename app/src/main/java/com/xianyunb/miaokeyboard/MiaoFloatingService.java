@@ -75,23 +75,21 @@ public class MiaoFloatingService extends Service {
         int color = prefs.getFloatColor();
         int size = prefs.getFloatSize();
 
+        float density = getResources().getDisplayMetrics().density;
+        int px = Math.round(size * density);
         if (params != null) {
             params.alpha = alpha;
+            // 悬浮窗整体尺寸由 WindowManager.LayoutParams 控制
+            params.width = px;
+            params.height = px;
         }
         // 图标
         if (text == null || text.trim().isEmpty()) text = "🐾";
         floatBtn.setText(text);
-        // 尺寸
-        float density = getResources().getDisplayMetrics().density;
-        int px = Math.round(size * density);
+        floatBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, size * 0.46f);
+        // 背景（动态渐变）
         View container = floatView.findViewById(R.id.float_container);
         if (container != null) {
-            android.view.ViewGroup.LayoutParams lp = container.getLayoutParams();
-            lp.width = px;
-            lp.height = px;
-            container.setLayoutParams(lp);
-            floatBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, size * 0.46f);
-            // 背景（动态渐变）
             container.setBackground(buildBackground(color));
         }
         if (added && windowManager != null) {
