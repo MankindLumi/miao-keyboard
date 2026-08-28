@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF6F2FF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#FF6C4AB6"
+            android:text="🐱 喵喵输入法" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="功能开关"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FF3F3356" />
+
+        <Switch
+            android:id="@+id/sw_replace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="词汇替换（你→主人 / 我→本喵）"
+            android:textColor="#FF3F3356" />
+
+        <Switch
+            android:id="@+id/sw_miao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="句末加「喵」"
+            android:textColor="#FF3F3356" />
+
+        <Switch
+            android:id="@+id/sw_kaomoji"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="末尾凑颜文字"
+            android:textColor="#FF3F3356" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="替换词（每行一条，格式：原词=新词）"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FF3F3356" />
+
+        <EditText
+            android:id="@+id/et_pairs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="4"
+            android:gravity="top"
+            android:textSize="14sp"
+            android:inputType="textMultiLine"
+            android:background="#FFFFFF"
+            android:padding="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="颜文字（每行一个）"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FF3F3356" />
+
+        <EditText
+            android:id="@+id/et_kaomoji"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="3"
+            android:gravity="top"
+            android:textSize="14sp"
+            android:inputType="textMultiLine"
+            android:background="#FFFFFF"
+            android:padding="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="试一下（输入文字，点「喵化测试」预览效果）"
+            android:textSize="15sp"
+            android:textColor="#FF3F3356" />
+
+        <EditText
+            android:id="@+id/et_test"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:background="#FFFFFF"
+            android:padding="10dp"
+            android:hint="例如：你要不要出去玩" />
+
+        <TextView
+            android:id="@+id/tv_test_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="15sp"
+            android:textColor="#FF6C4AB6"
+            android:text="" />
+
+        <Button
+            android:id="@+id/btn_try"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="喵化测试"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#FF6C4AB6" />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="保存配置"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#FF4A2F86" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="自动化喵化（无障碍）"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FF3F3356" />
+
+        <Switch
+            android:id="@+id/sw_auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自动监测输入并喵化"
+            android:textColor="#FF3F3356" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="触发延迟（停止输入多久后喵化）"
+            android:textSize="14sp"
+            android:textColor="#FF3F3356" />
+
+        <SeekBar
+            android:id="@+id/sb_delay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="45" />
+
+        <TextView
+            android:id="@+id/tv_delay_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#FF6C4AB6"
+            android:text="1.0 秒" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="执行间隔（两次喵化最小间隔）"
+            android:textSize="14sp"
+            android:textColor="#FF3F3356" />
+
+        <SeekBar
+            android:id="@+id/sb_interval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="280" />
+
+        <TextView
+            android:id="@+id/tv_interval_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#FF6C4AB6"
+            android:text="3.0 秒" />
+
+        <Button
+            android:id="@+id/btn_accessibility"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="前往开启无障碍服务"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#FF8B5CF6" />
+
+        <Button
+            android:id="@+id/btn_enable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="前往开启输入法"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#FF6C4AB6" />
+
+    </LinearLayout>
+</ScrollView>
