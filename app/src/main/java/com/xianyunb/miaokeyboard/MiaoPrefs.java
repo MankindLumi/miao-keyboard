@@ -8,11 +8,7 @@ import java.util.List;
 
 /**
  * 配置存储（SharedPreferences 持久化）。
- * 保存：替换对、颜文字库、三个功能开关。
- *
- * 存储格式：
- *  - 替换对：每行 "原词=新词"（用 \n 连接）
- *  - 颜文字：每行一个（用 \n 连接）
+ * 保存：替换对、颜文字库、功能开关、总开关、悬浮窗开关。
  */
 public class MiaoPrefs {
 
@@ -22,9 +18,11 @@ public class MiaoPrefs {
     private static final String KEY_REPLACE_ON = "replace_on";
     private static final String KEY_MIAO_ON = "miao_on";
     private static final String KEY_KAOMOJI_ON = "kaomoji_on";
+    private static final String KEY_MASTER_ON = "master_on";
     private static final String KEY_AUTO_ON = "auto_on";
     private static final String KEY_AUTO_DELAY = "auto_delay";
     private static final String KEY_AUTO_INTERVAL = "auto_interval";
+    private static final String KEY_FLOATING_ON = "floating_on";
 
     private final SharedPreferences sp;
 
@@ -32,8 +30,6 @@ public class MiaoPrefs {
         sp = context.getApplicationContext()
                 .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
-
-    // ---------- 替换对 ----------
 
     public String[][] getReplacePairs(String[][] defaults) {
         String raw = sp.getString(KEY_REPLACE, null);
@@ -71,8 +67,6 @@ public class MiaoPrefs {
         return sb.toString();
     }
 
-    // ---------- 颜文字 ----------
-
     public String[] getKaomojiLib(String[] defaults) {
         String raw = sp.getString(KEY_KAOMOJI, null);
         if (raw == null) return defaults;
@@ -94,8 +88,6 @@ public class MiaoPrefs {
         sp.edit().putString(KEY_KAOMOJI, sb.toString()).apply();
     }
 
-    // ---------- 开关 ----------
-
     public boolean isReplaceOn() { return sp.getBoolean(KEY_REPLACE_ON, true); }
     public boolean isMiaoOn()    { return sp.getBoolean(KEY_MIAO_ON, true); }
     public boolean isKaomojiOn() { return sp.getBoolean(KEY_KAOMOJI_ON, true); }
@@ -108,18 +100,22 @@ public class MiaoPrefs {
                 .apply();
     }
 
-    // ---------- 自动化喵化 ----------
+    public boolean isMasterOn() {
+        return sp.getBoolean(KEY_MASTER_ON, true);
+    }
+
+    public void saveMasterOn(boolean on) {
+        sp.edit().putBoolean(KEY_MASTER_ON, on).apply();
+    }
 
     public boolean isAutoOn() {
         return sp.getBoolean(KEY_AUTO_ON, false);
     }
 
-    /** 触发延迟（秒）。 */
     public float getAutoDelay() {
         return sp.getFloat(KEY_AUTO_DELAY, 1.0f);
     }
 
-    /** 执行间隔（秒）。 */
     public float getAutoInterval() {
         return sp.getFloat(KEY_AUTO_INTERVAL, 3.0f);
     }
@@ -130,5 +126,13 @@ public class MiaoPrefs {
                 .putFloat(KEY_AUTO_DELAY, delay)
                 .putFloat(KEY_AUTO_INTERVAL, interval)
                 .apply();
+    }
+
+    public boolean isFloatingOn() {
+        return sp.getBoolean(KEY_FLOATING_ON, false);
+    }
+
+    public void saveFloatingOn(boolean on) {
+        sp.edit().putBoolean(KEY_FLOATING_ON, on).apply();
     }
 }
