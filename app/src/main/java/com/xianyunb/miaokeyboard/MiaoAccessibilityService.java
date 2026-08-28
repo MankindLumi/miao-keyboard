@@ -56,7 +56,9 @@ public class MiaoAccessibilityService extends AccessibilityService {
         if (event == null) return;
         if (processing) return;
 
-        if (event.getEventType() != AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
+        int eventType = event.getEventType();
+        if (eventType != AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
+                && eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             return;
         }
 
@@ -122,7 +124,7 @@ public class MiaoAccessibilityService extends AccessibilityService {
     private AccessibilityNodeInfo findFocusedEditable(AccessibilityNodeInfo root) {
         if (root == null) return null;
         AccessibilityNodeInfo focused = root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
-        if (focused != null && focused.isEditable()) {
+        if (focused != null && isEditLike(focused)) {
             return focused;
         }
         return findEditableRecursive(root);
@@ -130,8 +132,13 @@ public class MiaoAccessibilityService extends AccessibilityService {
 
     private AccessibilityNodeInfo findEditableRecursive(AccessibilityNodeInfo node) {
         if (node == null) return null;
-        if (node.isEditable() && node.isFocused()) {
-            return node;
+        // 微信等自定义输入框 isFocused() 可能为 false，放宽为「可编辑即可」，
+        // 但优先命中聚焦或有文本的节点，避免误选无关的空白输入框。
+        if (isEditLike(node)) {
+            CharSequence t = node.getText();
+            if (node.isFocused() || (t != null && t.length() > 0)) {
+                return node;
+            }
         }
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo child = node.getChild(i);
@@ -142,6 +149,15 @@ public class MiaoAccessibilityService extends AccessibilityService {
             }
         }
         return null;
+    }
+
+    /** 判断节点是否为输入框（兼容微信自定义输入框 isEditable() 可能返回 false 的情况）。 */
+    private boolean isEditLike(AccessibilityNodeInfo node) {
+        if (node.isEditable()) return true;
+        CharSequence cls = node.getClassName();
+        if (cls == null) return false;
+        String c = cls.toString();
+        return c.contains("EditText") || c.contains("EditView");
     }
 
     @Override
