@@ -33,9 +33,10 @@ public class MiaoTextProcessor {
 
     /** 默认颜文字库 */
     private String[] kaomojiLib = new String[]{
-            "喵~", "喵喵~", "喵!", "(｡•̀ᴗ-)✧", "(=^･ω･^=)",
-            "ฅ^•ﻌ•^ฅ", "(≧ω≦)", "喵呜呜", "~(≧▽≦)", "(=^･ω･^=)ﾉ",
-            "(=˘ω˘=)", "(^･ω･^)", "(=^..^=)ﾉ", "喵呜~", "( ˶ °ω° ˶ )",
+            "(◕ᴗ◕✿)", "(｡•̀ᴗ-)✧", "(=^･ω･^=)",
+            "ฅ^•ﻌ•^ฅ", "(≧ω≦)", "(*´▽`*)", "~(≧▽≦)", "(=^･ω･^=)ﾉ",
+            "(=˘ω˘=)", "(^･ω･^)", "(=^..^=)ﾉ", "(づ｡◕‿‿◕｡)づ",
+            "( ˶ °ω° ˶ )", "(。・ω・。)", "(o^▽^o)",
     };
 
     public String[][] getDefaultReplacePairs() { return replacePairs; }
@@ -122,9 +123,10 @@ public class MiaoTextProcessor {
 
     private String appendKaomoji(String text) {
         String picked = kaomojiLib[random.nextInt(kaomojiLib.length)];
-        // 如果文本本身已经以颜文字/喵结尾，就不再叠加，避免堆砌
+        // 仅当文本本身已以颜文字符号结尾时才跳过，避免颜文字堆砌；
+        // 不再因「喵」结尾而跳过，从而支持“加喵 + 颜文字”同时生效。
         String trimmed = text.trim();
-        if (trimmed.endsWith("喵") || trimmed.endsWith("=") || trimmed.endsWith("^") || trimmed.endsWith(")")) {
+        if (trimmed.endsWith("=") || trimmed.endsWith("^") || trimmed.endsWith(")")) {
             return text;
         }
         return text + " " + picked;
