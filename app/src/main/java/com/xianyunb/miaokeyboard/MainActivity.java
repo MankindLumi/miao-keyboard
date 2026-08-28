@@ -1,25 +1,29 @@
 package com.xianyunb.miaokeyboard;
 
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * 主界面：功能开关 + 自定义替换词/颜文字 + 实时预览 + 保存配置。
+ * 主界面：总开关 + 功能开关 + 自定义替换词/颜文字 + 实时预览 + 悬浮窗开关。
  */
 public class MainActivity extends AppCompatActivity {
+
+    private static final int REQ_OVERLAY = 1001;
 
     private MiaoPrefs prefs;
     private MiaoTextProcessor processor;
 
+    private Switch swMaster;
     private Switch swReplace;
     private Switch swMiao;
     private Switch swKaomoji;
@@ -32,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar sbInterval;
     private TextView tvDelayValue;
     private TextView tvIntervalValue;
+    private Switch swFloating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         processor = new MiaoTextProcessor();
         processor.loadFromPrefs(prefs);
 
+        swMaster = findViewById(R.id.sw_master);
         swReplace = findViewById(R.id.sw_replace);
         swMiao = findViewById(R.id.sw_miao);
         swKaomoji = findViewById(R.id.sw_kaomoji);
@@ -54,10 +60,12 @@ public class MainActivity extends AppCompatActivity {
         sbInterval = findViewById(R.id.sb_interval);
         tvDelayValue = findViewById(R.id.tv_delay_value);
         tvIntervalValue = findViewById(R.id.tv_interval_value);
+        swFloating = findViewById(R.id.sw_floating);
 
         loadUi();
 
-        // 自动化设置监听
+        swMaster.setOnCheckedChangeListener((v, checked) -> prefs.saveMasterOn(checked));
+
         swAuto.setOnCheckedChangeListener((v, checked) -> saveAutoConfig());
         sbDelay.setOnSeekBarChangeListener(new SimpleSeekListener() {
             @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
@@ -72,18 +80,63 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        swFloating.setOnCheckedChangeListener((v, checked) -> {
+            if (checked) {
+                if (!Settings.canDrawOverlays(this)) {
+                    swFloating.setChecked(false);
+                    requestOverlayPermission();
+                    return;
+                }
+                prefs.saveFloatingOn(true);
+                startFloatingService();
+            } else {
+                prefs.saveFloatingOn(false);
+                stopFloatingService();
+            }
+        });
+
         findViewById(R.id.btn_try).setOnClickListener(v -> doTest());
 
         findViewById(R.id.btn_save).setOnClickListener(v -> saveConfig());
 
-        findViewById(R.id.btn_enable).setOnClickListener(v ->
-                startActivity(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)));
-
         findViewById(R.id.btn_accessibility).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
+
+        // 恢复悬浮窗（若之前已开启且有权限）
+        if (prefs.isFloatingOn() && Settings.canDrawOverlays(this)) {
+            startFloatingService();
+        }
+    }
+
+    private void requestOverlayPermission() {
+        Toast.makeText(this, "请允许悬浮窗权限后重新开启喵~", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + getPackageName()));
+        startActivityForResult(intent, REQ_OVERLAY);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_OVERLAY) {
+            if (Settings.canDrawOverlays(this)) {
+                prefs.saveFloatingOn(true);
+                swFloating.setChecked(true);
+                startFloatingService();
+            }
+        }
+    }
+
+    private void startFloatingService() {
+        startService(new Intent(this, MiaoFloatingService.class));
+    }
+
+    private void stopFloatingService() {
+        stopService(new Intent(this, MiaoFloatingService.class));
     }
 
     private void loadUi() {
+        swMaster.setChecked(prefs.isMasterOn());
         swReplace.setChecked(prefs.isReplaceOn());
         swMiao.setChecked(prefs.isMiaoOn());
         swKaomoji.setChecked(prefs.isKaomojiOn());
@@ -96,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
         sbInterval.setProgress(progressFromInterval(prefs.getAutoInterval()));
         tvDelayValue.setText(String.format(java.util.Locale.CHINA, "%.1f 秒", prefs.getAutoDelay()));
         tvIntervalValue.setText(String.format(java.util.Locale.CHINA, "%.1f 秒", prefs.getAutoInterval()));
+
+        swFloating.setChecked(prefs.isFloatingOn());
     }
 
     private String pairsToText(String[][] pairs) {
@@ -118,18 +173,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveConfig() {
-        // 保存替换对
         String[][] pairs = parsePairsText(etPairs.getText().toString());
         prefs.saveReplacePairs(pairs);
 
-        // 保存颜文字
         String[] lib = parseLibText(etKaomoji.getText().toString());
         prefs.saveKaomojiLib(lib);
 
-        // 保存开关
         prefs.saveFlags(swReplace.isChecked(), swMiao.isChecked(), swKaomoji.isChecked());
 
-        // 更新处理器内存
         processor.setCustomPairs(pairs);
         processor.setKaomojiLib(lib);
         processor.setFlags(swReplace.isChecked(), swMiao.isChecked(), swKaomoji.isChecked());
@@ -137,19 +188,15 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "已保存喵~", Toast.LENGTH_SHORT).show();
     }
 
-    // ---------- 自动化喵化 ----------
-
     private void saveAutoConfig() {
         float delay = delayFromProgress(sbDelay.getProgress());
         float interval = intervalFromProgress(sbInterval.getProgress());
         prefs.saveAuto(swAuto.isChecked(), delay, interval);
     }
 
-    // 进度 -> 秒
     private float delayFromProgress(int p) { return 0.5f + p * 0.1f; }
     private float intervalFromProgress(int p) { return 1.0f + p * 0.1f; }
 
-    // 秒 -> 进度
     private int progressFromDelay(float sec) { return Math.round((sec - 0.5f) / 0.1f); }
     private int progressFromInterval(float sec) { return Math.round((sec - 1.0f) / 0.1f); }
 
