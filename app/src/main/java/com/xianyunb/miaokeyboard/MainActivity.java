@@ -1,11 +1,14 @@
 package com.xianyunb.miaokeyboard;
 
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -14,11 +17,23 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * 主界面：总开关 + 功能开关 + 自定义替换词/颜文字 + 实时预览 + 悬浮窗开关。
+ * 主界面：总开关 + 功能开关 + 自定义替换词/颜文字 + 实时预览 + 悬浮窗开关 + 悬浮窗 DIY。
  */
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQ_OVERLAY = 1001;
+
+    /** 预设主色调（奶白浅色系）。 */
+    private static final int[] PRESET_COLORS = new int[]{
+            0xFFE7C4F0, // 奶白粉紫（默认）
+            0xFFF8BBD0, // 浅粉
+            0xFFBBDEFB, // 浅蓝
+            0xFFC8E6C9, // 浅绿
+            0xFFFFE0B2, // 浅橙
+            0xFFFFF9C4, // 浅黄
+            0xFFD1C4E9, // 浅紫
+            0xFFB2EBF2, // 浅青
+    };
 
     private MiaoPrefs prefs;
     private MiaoTextProcessor processor;
@@ -37,6 +52,15 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvDelayValue;
     private TextView tvIntervalValue;
     private Switch swFloating;
+
+    // 悬浮窗 DIY 控件
+    private EditText etFloatText;
+    private SeekBar sbFloatAlpha;
+    private SeekBar sbFloatSize;
+    private TextView tvFloatAlphaValue;
+    private TextView tvFloatSizeValue;
+    private LinearLayout llColors;
+    private int selectedColor = 0xFFE7C4F0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +86,16 @@ public class MainActivity extends AppCompatActivity {
         tvIntervalValue = findViewById(R.id.tv_interval_value);
         swFloating = findViewById(R.id.sw_floating);
 
+        etFloatText = findViewById(R.id.et_float_text);
+        sbFloatAlpha = findViewById(R.id.sb_float_alpha);
+        sbFloatSize = findViewById(R.id.sb_float_size);
+        tvFloatAlphaValue = findViewById(R.id.tv_float_alpha_value);
+        tvFloatSizeValue = findViewById(R.id.tv_float_size_value);
+        llColors = findViewById(R.id.ll_colors);
+
         loadUi();
+        setupColorButtons();
+        setupFloatListeners();
 
         swMaster.setOnCheckedChangeListener((v, checked) -> prefs.saveMasterOn(checked));
 
@@ -151,6 +184,94 @@ public class MainActivity extends AppCompatActivity {
         tvIntervalValue.setText(String.format(java.util.Locale.CHINA, "%.1f 秒", prefs.getAutoInterval()));
 
         swFloating.setChecked(prefs.isFloatingOn());
+
+        // 悬浮窗 DIY
+        etFloatText.setText(prefs.getFloatText());
+        selectedColor = prefs.getFloatColor();
+        sbFloatAlpha.setProgress(progressFromAlpha(prefs.getFloatAlpha()));
+        sbFloatSize.setProgress(progressFromSize(prefs.getFloatSize()));
+        tvFloatAlphaValue.setText(String.format(java.util.Locale.CHINA, "%.0f%%", prefs.getFloatAlpha() * 100));
+        tvFloatSizeValue.setText(prefs.getFloatSize() + " dp");
+    }
+
+    /** 构建颜色色块选择器。 */
+    private void setupColorButtons() {
+        float d = getResources().getDisplayMetrics().density;
+        int size = Math.round(40 * d);
+        for (int color : PRESET_COLORS) {
+            TextView chip = new TextView(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
+            lp.setMargins(0, 0, Math.round(10 * d), 0);
+            chip.setLayoutParams(lp);
+            chip.setGravity(Gravity.CENTER);
+            chip.setText("●");
+            chip.setTextColor(color);
+            chip.setTextSize(20);
+            chip.setBackground(makeChipBackground(color, color == selectedColor));
+            chip.setOnClickListener(v -> {
+                selectedColor = color;
+                prefs.saveFloatColor(color);
+                refreshFloating();
+                updateColorChips();
+            });
+            llColors.addView(chip);
+        }
+    }
+
+    private GradientDrawable makeChipBackground(int color, boolean selected) {
+        float d = getResources().getDisplayMetrics().density;
+        GradientDrawable bg = new GradientDrawable();
+        bg.setShape(GradientDrawable.OVAL);
+        bg.setColor(color);
+        bg.setStroke(Math.round(selected ? 3 * d : 1 * d),
+                selected ? 0xFF6C4AB6 : 0x22000000);
+        return bg;
+    }
+
+    private void updateColorChips() {
+        for (int i = 0; i < llColors.getChildCount(); i++) {
+            View v = llColors.getChildAt(i);
+            int color = PRESET_COLORS[i];
+            v.setBackground(makeChipBackground(color, color == selectedColor));
+        }
+    }
+
+    private void setupFloatListeners() {
+        sbFloatAlpha.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
+                float a = alphaFromProgress(p);
+                tvFloatAlphaValue.setText(String.format(java.util.Locale.CHINA, "%.0f%%", a * 100));
+                if (fromUser) {
+                    prefs.saveFloatAlpha(a);
+                    refreshFloating();
+                }
+            }
+        });
+        sbFloatSize.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
+                int sz = sizeFromProgress(p);
+                tvFloatSizeValue.setText(sz + " dp");
+                if (fromUser) {
+                    prefs.saveFloatSize(sz);
+                    refreshFloating();
+                }
+            }
+        });
+        etFloatText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String t = etFloatText.getText().toString().trim();
+                if (t.isEmpty()) t = "🐾";
+                prefs.saveFloatText(t);
+                refreshFloating();
+            }
+        });
+    }
+
+    private void refreshFloating() {
+        MiaoFloatingService svc = MiaoFloatingService.getInstance();
+        if (svc != null) {
+            svc.applyStyle();
+        }
     }
 
     private String pairsToText(String[][] pairs) {
@@ -185,6 +306,15 @@ public class MainActivity extends AppCompatActivity {
         processor.setKaomojiLib(lib);
         processor.setFlags(swReplace.isChecked(), swMiao.isChecked(), swKaomoji.isChecked());
 
+        // 悬浮窗 DIY 一并保存
+        String ft = etFloatText.getText().toString().trim();
+        if (ft.isEmpty()) ft = "🐾";
+        prefs.saveFloatText(ft);
+        prefs.saveFloatAlpha(alphaFromProgress(sbFloatAlpha.getProgress()));
+        prefs.saveFloatSize(sizeFromProgress(sbFloatSize.getProgress()));
+        prefs.saveFloatColor(selectedColor);
+        refreshFloating();
+
         Toast.makeText(this, "已保存喵~", Toast.LENGTH_SHORT).show();
     }
 
@@ -199,6 +329,12 @@ public class MainActivity extends AppCompatActivity {
 
     private int progressFromDelay(float sec) { return Math.round((sec - 0.5f) / 0.1f); }
     private int progressFromInterval(float sec) { return Math.round((sec - 1.0f) / 0.1f); }
+
+    private float alphaFromProgress(int p) { return 0.2f + p * 0.01f; }
+    private int progressFromAlpha(float a) { return Math.max(0, Math.min(80, Math.round((a - 0.2f) / 0.01f))); }
+
+    private int sizeFromProgress(int p) { return 40 + p; }
+    private int progressFromSize(int s) { return Math.max(0, Math.min(40, s - 40)); }
 
     private abstract static class SimpleSeekListener implements SeekBar.OnSeekBarChangeListener {
         @Override public void onStartTrackingTouch(SeekBar seekBar) {}

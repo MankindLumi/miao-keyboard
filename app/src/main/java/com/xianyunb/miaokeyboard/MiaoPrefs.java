@@ -1,17 +1,13 @@
 package com.xianyunb.miaokeyboard;
-
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import java.util.ArrayList;
 import java.util.List;
-
 /**
  * 配置存储（SharedPreferences 持久化）。
- * 保存：替换对、颜文字库、功能开关、总开关、悬浮窗开关。
+ * 保存：替换对、颜文字库、功能开关、总开关、悬浮窗开关、悬浮窗外观（透明度/图标/颜色/尺寸）。
  */
 public class MiaoPrefs {
-
     private static final String PREF_NAME = "miao_prefs";
     private static final String KEY_REPLACE = "replace_pairs";
     private static final String KEY_KAOMOJI = "kaomoji_lib";
@@ -23,7 +19,10 @@ public class MiaoPrefs {
     private static final String KEY_AUTO_DELAY = "auto_delay";
     private static final String KEY_AUTO_INTERVAL = "auto_interval";
     private static final String KEY_FLOATING_ON = "floating_on";
-
+    private static final String KEY_FLOAT_ALPHA = "float_alpha";
+    private static final String KEY_FLOAT_TEXT = "float_text";
+    private static final String KEY_FLOAT_COLOR = "float_color";
+    private static final String KEY_FLOAT_SIZE = "float_size";
     private final SharedPreferences sp;
 
     public MiaoPrefs(Context context) {
@@ -36,7 +35,6 @@ public class MiaoPrefs {
         if (raw == null) return defaults;
         return parsePairs(raw);
     }
-
     public void saveReplacePairs(String[][] pairs) {
         sp.edit().putString(KEY_REPLACE, pairsToRaw(pairs)).apply();
     }
@@ -56,7 +54,6 @@ public class MiaoPrefs {
         }
         return list.toArray(new String[0][]);
     }
-
     private String pairsToRaw(String[][] pairs) {
         StringBuilder sb = new StringBuilder();
         for (String[] p : pairs) {
@@ -66,7 +63,6 @@ public class MiaoPrefs {
         }
         return sb.toString();
     }
-
     public String[] getKaomojiLib(String[] defaults) {
         String raw = sp.getString(KEY_KAOMOJI, null);
         if (raw == null) return defaults;
@@ -77,7 +73,6 @@ public class MiaoPrefs {
         }
         return list.isEmpty() ? defaults : list.toArray(new String[0]);
     }
-
     public void saveKaomojiLib(String[] lib) {
         StringBuilder sb = new StringBuilder();
         for (String s : lib) {
@@ -87,11 +82,9 @@ public class MiaoPrefs {
         }
         sp.edit().putString(KEY_KAOMOJI, sb.toString()).apply();
     }
-
     public boolean isReplaceOn() { return sp.getBoolean(KEY_REPLACE_ON, true); }
     public boolean isMiaoOn()    { return sp.getBoolean(KEY_MIAO_ON, true); }
-    public boolean isKaomojiOn() { return sp.getBoolean(KEY_KAOMOJI_ON, true); }
-
+    public boolean isKaomojiOn() { return sp.getBoolean(KEY_KAOMOJI_ON, false); }
     public void saveFlags(boolean replace, boolean miao, boolean kaomoji) {
         sp.edit()
                 .putBoolean(KEY_REPLACE_ON, replace)
@@ -99,27 +92,21 @@ public class MiaoPrefs {
                 .putBoolean(KEY_KAOMOJI_ON, kaomoji)
                 .apply();
     }
-
     public boolean isMasterOn() {
         return sp.getBoolean(KEY_MASTER_ON, true);
     }
-
     public void saveMasterOn(boolean on) {
         sp.edit().putBoolean(KEY_MASTER_ON, on).apply();
     }
-
     public boolean isAutoOn() {
         return sp.getBoolean(KEY_AUTO_ON, false);
     }
-
     public float getAutoDelay() {
         return sp.getFloat(KEY_AUTO_DELAY, 1.0f);
     }
-
     public float getAutoInterval() {
         return sp.getFloat(KEY_AUTO_INTERVAL, 3.0f);
     }
-
     public void saveAuto(boolean on, float delay, float interval) {
         sp.edit()
                 .putBoolean(KEY_AUTO_ON, on)
@@ -128,11 +115,35 @@ public class MiaoPrefs {
                 .apply();
     }
 
+    // ---------- 悬浮窗 ----------
     public boolean isFloatingOn() {
         return sp.getBoolean(KEY_FLOATING_ON, false);
     }
-
     public void saveFloatingOn(boolean on) {
         sp.edit().putBoolean(KEY_FLOATING_ON, on).apply();
+    }
+    public float getFloatAlpha() {
+        return sp.getFloat(KEY_FLOAT_ALPHA, 1.0f);
+    }
+    public void saveFloatAlpha(float alpha) {
+        sp.edit().putFloat(KEY_FLOAT_ALPHA, alpha).apply();
+    }
+    public String getFloatText() {
+        return sp.getString(KEY_FLOAT_TEXT, "🐾");
+    }
+    public void saveFloatText(String text) {
+        sp.edit().putString(KEY_FLOAT_TEXT, text).apply();
+    }
+    public int getFloatColor() {
+        return sp.getInt(KEY_FLOAT_COLOR, 0xFFE7C4F0);
+    }
+    public void saveFloatColor(int color) {
+        sp.edit().putInt(KEY_FLOAT_COLOR, color).apply();
+    }
+    public int getFloatSize() {
+        return sp.getInt(KEY_FLOAT_SIZE, 56);
+    }
+    public void saveFloatSize(int size) {
+        sp.edit().putInt(KEY_FLOAT_SIZE, size).apply();
     }
 }

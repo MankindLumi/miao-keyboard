@@ -48,7 +48,7 @@ public class MiaoTextProcessor {
 
     private boolean enabledReplace = true;
     private boolean enabledMiao = true;
-    private boolean enabledKaomoji = true;
+    private boolean enabledKaomoji = false;
 
     public void setCustomPairs(String[][] pairs) {
         if (pairs != null && pairs.length > 0) {
