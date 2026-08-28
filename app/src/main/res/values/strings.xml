@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">喵喵输入法</string>
-    <string name="accessibility_desc">喵喵输入法无障碍服务：在任意应用中自动监测输入内容，并在你停止输入后自动喵化文字。可手动调节触发延迟与执行间隔。</string>
+    <string name="app_name">喵喵工具</string>
+    <string name="accessibility_desc">喵喵工具无障碍服务：在任意应用中自动监测输入内容并喵化文字，也可通过悬浮按钮手动触发。</string>
 </resources>
