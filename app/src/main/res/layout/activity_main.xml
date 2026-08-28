@@ -299,12 +299,12 @@
             android:text="主色调"
             android:textSize="14sp"
             android:textColor="#FF3F3356" />
-        <LinearLayout
+        <GridLayout
             android:id="@+id/ll_colors"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:orientation="horizontal" />
+            android:columnCount="4" />
 
     </LinearLayout>
 </ScrollView>
