@@ -3,7 +3,6 @@
 > 一只会「喵化」的 Android 文本增强小工具 —— 基于无障碍服务（AccessibilityService）的输入辅助与文本处理助手。
 
 ## 简介
-
 喵键盘（Miao Keyboard）通过无障碍服务读取 / 替换输入框文本，按可配置规则为文字加上猫猫语气（句末加喵、颜文字、语气调整等），并提供基于 WebView 的设置中心与本地 / 在线模型引擎。
 
 ## 功能特性
@@ -22,6 +21,7 @@
 
 | 版本 | 说明 |
 |---|---|
+| vX109（3.0.05） | **更新检查双通道**：GitHub API 不可达（超时/被墙/限流）时自动回退读自建镜像 `update.json`，不再静默放弃；镜像版本号按 `versionCode % 10000`（=109）对齐比较，不会误报；X108 的 `getPackageArchiveInfo` 完整性校验完整保留；versionCode 30109 |
 | vX108（3.0.04） | **缓存兜底真正生效 + 半截包识别**：修复 X107 中 `checkPendingApk()` 被错放在 `if-nez p0` 提前返回分支、导致缓存兜底从未执行的 bug（改到 `:cond_3` 后）；新增 `getPackageArchiveInfo()` 完整性校验，半截包/损坏包直接删除并打日志 `pending apk corrupt, deleted`，不再误弹「下载完成」后报解析错误；versionCode 30108 |
 | vX107（3.0.03） | **更新器修复 + 下载进度条真实化**：`MiaoUpdBridge.send()/run()` 判空写反修复，进度条与速率能真实跟随；X107 包内 `checkPendingApk` 调用点位置错误（已在 X108 修正）；versionCode 30107 |
 | vX106（3.0.02） | **下载进度条修复**：修正 `MiaoUpdBridge` 判空反向导致的进度不更新；实测下载 534,872,271 B 与三方哈希一致；versionCode 30106 |
