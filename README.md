@@ -21,6 +21,9 @@
 
 | 版本 | 说明 |
 |---|---|
+| vX112（3.0.08） | **「下载完没反应」修复 + 下载完成安装面板**：`Notification.Builder` 4 处构造点全部补上 `setChannelId`（X111 漏了这步，Android 8.0+ 会把「下载完成」通知静默丢弃）；新增 `hasPending()` / `installPendingApk()` 与 H5 侧 `x112pending` / `x112go` 面板，缓存包已就位就直显「安装」按钮；前台服务通知 importance 2 → 3；versionCode 30112，534,876,367 B（signing block 页对齐致 +4096，实际内容仅 +557） |
+| vX111（3.0.07） | **前台服务 + WAKE_LOCK**：新增 `MiaoUpdateService`（`foregroundServiceType="dataSync"`），Manifest 补 3 项权限 + 1 个 service，下载期间持 `PARTIAL_WAKE_LOCK`，灭屏/切后台不再被系统掐断；通知 ID 复用 `0x9e` 避免两条进度条，`stopForeground(false)` 保留完成通知；起不来自动回退 X110 原路径；versionCode 30111 |
+| vX110（3.0.06） | **断点续传 + 自动重试**：`downloadApk()` 先读缓存分片长度再发 `Range: bytes=N-`，206 追加写 / 200 截断重下 / 416 视为已完整；64KB 缓流复制实时上报进度，最多 5 次退避重试且每次从中断点续；`size mismatch` 硬校验半截包；versionCode 30110 |
 | vX109（3.0.05） | **更新检查双通道**：GitHub API 不可达（超时/被墙/限流）时自动回退读自建镜像 `update.json`，不再静默放弃；镜像版本号按 `versionCode % 10000`（=109）对齐比较，不会误报；X108 的 `getPackageArchiveInfo` 完整性校验完整保留；versionCode 30109 |
 | vX108（3.0.04） | **缓存兜底真正生效 + 半截包识别**：修复 X107 中 `checkPendingApk()` 被错放在 `if-nez p0` 提前返回分支、导致缓存兜底从未执行的 bug（改到 `:cond_3` 后）；新增 `getPackageArchiveInfo()` 完整性校验，半截包/损坏包直接删除并打日志 `pending apk corrupt, deleted`，不再误弹「下载完成」后报解析错误；versionCode 30108 |
 | vX107（3.0.03） | **更新器修复 + 下载进度条真实化**：`MiaoUpdBridge.send()/run()` 判空写反修复，进度条与速率能真实跟随；X107 包内 `checkPendingApk` 调用点位置错误（已在 X108 修正）；versionCode 30107 |
